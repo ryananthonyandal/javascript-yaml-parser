@@ -1,8 +1,6 @@
 #summary Documentation
 #labels Phase-Implementation
 
-= Introduction =
-
 In the 'lib' folder, you can find the JSDoc toolkit.
 This toolkit is used to generate the documentation for the project.
 The documentation is in the folder 'doc'. 
