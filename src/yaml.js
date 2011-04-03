@@ -32,30 +32,25 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 
 var YAML = 
 (function() {
-    
-    /**@private*/
-    var errors = [];
-    /**@private*/
-    var reference_blocks = [];
-    /**@private*/
-    var processing_time = 0;
-    
-    var regex =
-    {
-        "regLevel" : new RegExp("^([\s\-]+)"),
-        "invalidLine" : new RegExp("^\-\-\-|^\.\.\.|^\s*#.*|^\s*$"),
-        "dashesString" : new RegExp("^\s*\"([^\"]*)\"\s*$"),
-        "quotesString" : new RegExp("^\s*\'([^\']*)\'\s*$"),
-        "float" : new RegExp("^[+-]?[0-9]+\.[0-9]+(e[+-]?[0-9]+(\.[0-9]+)?)?$"),
-        "integer" : new RegExp("^[+-]?[0-9]+$"),
-        "array" : new RegExp("\[\s*(.*)\s*\]"),
-        "map" : new RegExp("\{\s*(.*)\s*\}"),
-        "key_value" : new RegExp("([a-z0-9_-][ a-z0-9_-]+):( .+)", "i"),
-        "key" : new RegExp("([a-z0-9_-][ a-z0-9_-]+):( .+)?", "i"),
-        "item" : new RegExp("^-\s+"),
-        "trim" : new RegExp("^\s+|\s+$"),
-        "comment" : new RegExp("(^[^\"\'#]*(\"[^\"]+\"|\'[^\']+\')+)\s*#.*|([^#]*?)\s*#.*")
-    };
+    var errors = [],
+        reference_blocks = [],
+        processing_time = 0,
+        regex =
+        {
+            "regLevel" : new RegExp("^([\\s\\-]+)"),
+            "invalidLine" : new RegExp("^\\-\\-\\-|^\\.\\.\\.|^\\s*#.*|^\\s*$"),
+            "dashesString" : new RegExp("^\\s*\\\"([^\\\"]*)\\\"\\s*$"),
+            "quotesString" : new RegExp("^\\s*\\\'([^\\\']*)\\\'\\s*$"),
+            "float" : new RegExp("^[+-]?[0-9]+\\.[0-9]+(e[+-]?[0-9]+(\\.[0-9]+)?)?$"),
+            "integer" : new RegExp("^[+-]?[0-9]+$"),
+            "array" : new RegExp("\\[\\s*(.*)\\s*\\]"),
+            "map" : new RegExp("\\{\\s*(.*)\\s*\\}"),
+            "key_value" : new RegExp("([a-z0-9_-][ a-z0-9_-]+):( .+)", "i"),
+            "key" : new RegExp("([a-z0-9_-][ a-z0-9_-]+):( .+)?", "i"),
+            "item" : new RegExp("^-\\s+"),
+            "trim" : new RegExp("^\\s+|\\s+$"),
+            "comment" : new RegExp("(^[^\\\"\\\'#]*(\\\"[^\\\"]+\\\"|\\\'[^\\\']+\\\')+)\\\s*#.*|([^#]*?)\\\s*#.*")
+        };
  
      /**
       * @class A block of lines of a given level.
