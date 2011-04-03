@@ -39,6 +39,23 @@ var YAML =
     var reference_blocks = [];
     /**@private*/
     var processing_time = 0;
+    
+    var regex =
+    {
+        "regLevel" : new RegExp("^([\s\-]+)"),
+        "invalidLine" : new RegExp("^\-\-\-|^\.\.\.|^\s*#.*|^\s*$"),
+        "dashesString" : new RegExp("^\s*\"([^\"]*)\"\s*$"),
+        "quotesString" : new RegExp("^\s*\'([^\']*)\'\s*$"),
+        "float" : new RegExp("^[+-]?[0-9]+\.[0-9]+(e[+-]?[0-9]+(\.[0-9]+)?)?$"),
+        "integer" : new RegExp("^[+-]?[0-9]+$"),
+        "array" : new RegExp("\[\s*(.*)\s*\]"),
+        "map" : new RegExp("\{\s*(.*)\s*\}"),
+        "key_value" : new RegExp("([a-z0-9_-][ a-z0-9_-]+):( .+)", "i"),
+        "key" : new RegExp("([a-z0-9_-][ a-z0-9_-]+):( .+)?", "i"),
+        "item" : new RegExp("^-\s+"),
+        "trim" : new RegExp("^\s+|\s+$"),
+        "comment" : new RegExp("(^[^\"\'#]*(\"[^\"]+\"|\'[^\']+\')+)\s*#.*|([^#]*?)\s*#.*")
+    };
  
      /**
       * @class A block of lines of a given level.
@@ -108,8 +125,8 @@ var YAML =
     }
 
     function parser(str) {
-        var regLevel = /^([\s\-]+)/;
-        var invalidLine = /^\-\-\-|^\.\.\.|^\s*#.*|^\s*$/;
+        var regLevel = regex["regLevel"];
+        var invalidLine = regex["invalidLine"];
         var lines = str.split("\n");
         var m;
         var level = 0, curLevel = 0;
@@ -165,7 +182,7 @@ var YAML =
                 }
             }
             
-            currentBlock.lines.push(line.replace(/^\s+/, ""));
+            currentBlock.lines.push(line.replace(regex["trim"], ""));
             curLevel = level;
         }
         
@@ -190,15 +207,15 @@ var YAML =
             return Number.NEGATIVE_INFINITY;
         } else if( !isNaN(m = Date.parse(val))) {
             return new Date(m);
-        } else if(m = val.match(/^\s*\"([^\"]*)\"\s*$/)) {
+        } else if(m = val.match(regex["dashesString"])) {
             return m[1];
-        } else if(m = val.match(/^\s*\'([^\']*)\'\s*$/)) {
+        } else if(m = val.match(regex["quotesString"])) {
             return m[1];
-        } else if(m = val.match(/^[+-]?[0-9]+\.[0-9]+(e[+-]?[0-9]+(\.[0-9]+)?)?$/)) {
+        } else if(m = val.match(regex["float"])) {
             return parseFloat(m[0]);
-        } else if(m = val.match(/^[+-]?[0-9]+$/)) {
+        } else if(m = val.match(regex["integer"])) {
             return parseInt(m[0]);
-        } else if(m = val.match(/\[\s*(.*)\s*\]/)){
+        } else if(m = val.match(regex["array"])){
             var count = 0, c = ' ';
             var res = [];
             var content = "";
@@ -231,7 +248,7 @@ var YAML =
             if(content.length > 0)
                 res.push(processValue(content));
             return res;
-        } else if(m = val.match(/\{\s*(.*)\s*\}/)){
+        } else if(m = val.match(regex["map"])){
             var count = 0, c = ' ';
             var res = [];
             var content = "";
@@ -266,7 +283,7 @@ var YAML =
                 
             var newRes = [];
             for(var j = 0, lenJ = res.length; j < lenJ; ++j) {
-                if(m = res[j].match(/([a-z0-9_-][ a-z0-9_-]+):( .+)/i)) {
+                if(m = res[j].match(regex["key_value"])) {
                     newRes[m[1]] = processValue(m[2]);
                 }
             }
@@ -323,17 +340,17 @@ var YAML =
             for(var i = 0, len = lines.length; i < len; ++i) {
                 var line = lines[i];
                                     
-                if(m = line.match(/([ a-z0-9_-]+):( .+)?/i)) {
+                if(m = line.match(regex["key"])) {
                     var key = m[1];
                     
                     if(key[0] == '-') {
-                        key = key.replace(/^-\s+/, "");
+                        key = key.replace(regex["item"], "");
                         if(currentObj != null) res.push(currentObj);
                         currentObj = [];
                     }
                     
                     if(typeof m[2] != "undefined") {
-                        var value = m[2].replace(/^\s+|\s+$/, "");
+                        var value = m[2].replace(regex["trim"], "");
                         if(value[0] == '&') {
                             var nb = processBlock(children);
                             if(currentObj != null) currentObj[key] = nb;
@@ -399,7 +416,7 @@ var YAML =
         var m;
         var lines = src.split("\n");
         
-        var r = /(^[^\"\'#]*(\"[^\"]+\"|\'[^\']+\')+)\s*#.*|([^#]*?)\s*#.*/;
+        var r = regex["comment"];
         
         for(var i in lines) {
             while(m = lines[i].match(r)) {
