@@ -6,6 +6,9 @@
     <script type="text/javascript" src="../src/yaml.js"></script>
     <script type="text/javascript">
         window.onload = function() {
+            var test1 = YAML.eval("---\n- one\n- two");
+            var test2 = YAML.eval("---\none: two");
+        
             YAML.fromURL("example.yml", function(data) {
                 var errors = YAML.getErrors();
                 if(errors.length == 0)
