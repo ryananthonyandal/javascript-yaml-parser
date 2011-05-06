@@ -1,5 +1,27 @@
 ---
 # Hello World!
+
+chart:    
+    - {x: 1993, y: 5}
+
+    - {x: 1994, y: 5}
+
+    - {x: 1995, y: 5}
+    
+    - {x: 1996, y: 5}
+
+multi-level:
+    - array1:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+    - array2: { teste: ah,  bah: 123 }
+    - array3:
+      - array31:
+        - array311: [0, 1, 2, 3]
+        
 receipt:     Oz-Ware Purchase Invoice # isto é um comentário
 date:        2007-08-06
 customer:
@@ -31,7 +53,7 @@ bill-to:  &id001
     state:  KS
 
 ship-to:  *id001
-
+        
 specialDelivery:  >
     Follow the Yellow Brick
     Road to the Emerald City.

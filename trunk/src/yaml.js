@@ -45,7 +45,8 @@ var YAML =
             "integer" : new RegExp("^[+-]?[0-9]+$"),
             "array" : new RegExp("\\[\\s*(.*)\\s*\\]"),
             "map" : new RegExp("\\{\\s*(.*)\\s*\\}"),
-            "key_value" : new RegExp("([a-z0-9_-][ a-z0-9_-]+):( .+)", "i"),
+            "key_value" : new RegExp("([a-z0-9_-][ a-z0-9_-]*):( .+)", "i"),
+            "single_key_value" : new RegExp("^([a-z0-9_-][ a-z0-9_-]*):( .+?)$", "i"),
             "key" : new RegExp("([a-z0-9_-][ a-z0-9_-]+):( .+)?", "i"),
             "item" : new RegExp("^-\\s+"),
             "trim" : new RegExp("^\\s+|\\s+$"),
@@ -185,9 +186,9 @@ var YAML =
     }
     
     function processValue(val) {
-        var v = val;
+        val = val.replace(regex["trim"], "");
         var m = null;
-                
+
         if(val == 'true') {
             return true;
         } else if(val == 'false') {
@@ -200,8 +201,6 @@ var YAML =
             return Number.POSITIVE_INFINITY;
         } else if(val == '-.inf') {
             return Number.NEGATIVE_INFINITY;
-        } else if( !isNaN(m = Date.parse(val))) {
-            return new Date(m);
         } else if(m = val.match(regex["dashesString"])) {
             return m[1];
         } else if(m = val.match(regex["quotesString"])) {
@@ -210,6 +209,12 @@ var YAML =
             return parseFloat(m[0]);
         } else if(m = val.match(regex["integer"])) {
             return parseInt(m[0]);
+        } else if( !isNaN(m = Date.parse(val))) {
+            return new Date(m);
+        } else if(m = val.match(regex["single_key_value"])) {
+            var res = {};
+            res[m[1]] = processValue(m[2]);
+            return res;
         } else if(m = val.match(regex["array"])){
             var count = 0, c = ' ';
             var res = [];
@@ -276,7 +281,7 @@ var YAML =
             if(content.length > 0)
                 res.push(content);
                 
-            var newRes = [];
+            var newRes = {};
             for(var j = 0, lenJ = res.length; j < lenJ; ++j) {
                 if(m = res[j].match(regex["key_value"])) {
                     newRes[m[1]] = processValue(m[2]);
@@ -311,7 +316,7 @@ var YAML =
     
     function processBlock(blocks) {
         var m = null;
-        var res = [];
+        var res = {};
         var lines = null;
         var children = null;
         var currentObj = null;
@@ -319,6 +324,8 @@ var YAML =
         var level = -1;
         
         var processedBlocks = [];
+        
+        var isMap = true;
         
         for(var j = 0, lenJ = blocks.length; j < lenJ; ++j) {
             
@@ -334,14 +341,16 @@ var YAML =
         
             for(var i = 0, len = lines.length; i < len; ++i) {
                 var line = lines[i];
-                                    
+
                 if(m = line.match(regex["key"])) {
                     var key = m[1];
                     
                     if(key[0] == '-') {
                         key = key.replace(regex["item"], "");
+                        if(isMap) { isMap = false; res = []; }
                         if(currentObj != null) res.push(currentObj);
-                        currentObj = [];
+                        currentObj = {};
+                        isMap = true;
                     }
                     
                     if(typeof m[2] != "undefined") {
@@ -356,7 +365,7 @@ var YAML =
                             else res[key] = processLiteralBlock(children.shift());
                         } else if(value[0] == '*') {
                             var v = value.substr(1);
-                            var no = [];
+                            var no = {};
                             
                             if(typeof reference_blocks[v] == "undefined") {
                                 errors.push("Reference '" + v + "' not found!");
@@ -380,19 +389,26 @@ var YAML =
                         else res[key] = processBlock(children);                        
                     }
                 } else if(line.match(/^-\s*$/)) {
+                    if(isMap) { isMap = false; res = []; }
                     if(currentObj != null) res.push(currentObj);
-                    currentObj = [];
+                    currentObj = {};
+                    isMap = true;
                     continue;
                 } else if(m = line.match(/^-\s*(.*)/)) {
                     if(currentObj != null) 
-                        currentObj.push(m[1]);
-                    else
-                        res.push(m[1]);
+                        currentObj.push(processValue(m[1]));
+                    else {
+                        if(isMap) { isMap = false; res = []; }
+                        res.push(processValue(m[1]));
+                    }
                     continue;
                 }
             }
             
-            if(currentObj != null) res.push(currentObj);
+            if(currentObj != null) {
+                if(isMap) { isMap = false; res = []; }
+                res.push(currentObj);
+            }
         }
         
         for(var j = processedBlocks.length - 1; j >= 0; --j) {
