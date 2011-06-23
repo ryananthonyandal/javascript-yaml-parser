@@ -347,7 +347,12 @@ var YAML =
                     
                     if(key[0] == '-') {
                         key = key.replace(regex["item"], "");
-                        if(isMap) { isMap = false; res = []; }
+                        if (isMap) { 
+                            isMap = false;
+                            if (typeof(res.length) === "undefined") {
+                                res = [];
+                            } 
+                        }
                         if(currentObj != null) res.push(currentObj);
                         currentObj = {};
                         isMap = true;
@@ -389,7 +394,12 @@ var YAML =
                         else res[key] = processBlock(children);                        
                     }
                 } else if(line.match(/^-\s*$/)) {
-                    if(isMap) { isMap = false; res = []; }
+                    if (isMap) { 
+                        isMap = false;
+                        if (typeof(res.length) === "undefined") {
+                            res = [];
+                        } 
+                    }
                     if(currentObj != null) res.push(currentObj);
                     currentObj = {};
                     isMap = true;
@@ -398,7 +408,12 @@ var YAML =
                     if(currentObj != null) 
                         currentObj.push(processValue(m[1]));
                     else {
-                        if(isMap) { isMap = false; res = []; }
+                        if (isMap) { 
+                            isMap = false;
+                            if (typeof(res.length) === "undefined") {
+                                res = [];
+                            } 
+                        }
                         res.push(processValue(m[1]));
                     }
                     continue;
@@ -406,7 +421,12 @@ var YAML =
             }
             
             if(currentObj != null) {
-                if(isMap) { isMap = false; res = []; }
+                if (isMap) { 
+                    isMap = false;
+                    if (typeof(res.length) === "undefined") {
+                        res = [];
+                    } 
+                }
                 res.push(currentObj);
             }
         }
