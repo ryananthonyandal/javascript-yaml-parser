@@ -50,7 +50,7 @@ var YAML =
             "key" : new RegExp("([a-z0-9_-][ a-z0-9_-]+):( .+)?", "i"),
             "item" : new RegExp("^-\\s+"),
             "trim" : new RegExp("^\\s+|\\s+$"),
-            "comment" : new RegExp("(^[^\\\"\\\'#]*(\\\"[^\\\"]+\\\"|\\\'[^\\\']+\\\')+)\\\s*#.*|([^#]*?)\\\s*#.*")
+            "comment" : new RegExp("([^\\\'\\\"#]+([\\\'\\\"][^\\\'\\\"]*[\\\'\\\"])*)*(#.*)?")
         };
  
      /**
@@ -450,14 +450,18 @@ var YAML =
         var r = regex["comment"];
         
         for(var i in lines) {
-            while(m = lines[i].match(r)) {
-                var cmt = "";
-                if(typeof m[1] != "undefined")
+            if(m = lines[i].match(r)) {
+/*                var cmt = "";
+                if(typeof m[3] != "undefined")
                     lines[i] = m[1];
                 else if(typeof m[3] != "undefined")
                     lines[i] = m[3]; 
                 else
                     lines[i] = "";
+                    */
+                if(typeof m[3] !== "undefined") {
+                    lines[i] = m[0].substr(0, m[0].length - m[3].length);
+                }
             }
         }
         
