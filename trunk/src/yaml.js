@@ -111,7 +111,7 @@ var YAML =
     function fromURL(src, ondone) {
         var client = createXMLHTTPRequest();
         client.onreadystatechange = function() {
-            if (this.readyState == 4 || this.status == 200) {
+            if (this.readyState == 4 && this.status == 200) {
                 var txt = this.responseText;
                 ondone(YAML.eval(txt));
             }
