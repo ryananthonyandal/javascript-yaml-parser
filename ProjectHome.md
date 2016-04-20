@@ -1,0 +1,1 @@
+This project intends to implement a simple YAML parser. It does not intend to implement all the aspects formalized in the YAML specs, but rather to implement a robust parser in Javascript, enough to load simply structured YAML files, without depending on external libraries and as compatible as possible with all Javascript-powered browsers.
